@@ -1,5 +1,9 @@
 # SGC-Bin-Collection
-Helper library for getting bin collection information from South Gloucestershire Council
+![Nuget](https://img.shields.io/nuget/v/SouthGloucestershireBinCollection.svg)
+
+Helper library for getting bin collection information from South Gloucestershire Council.
+
+Releases can be found on [Nuget](https://www.nuget.org/packages/SouthGloucestershireBinCollection/).
 
 ## Building
 
