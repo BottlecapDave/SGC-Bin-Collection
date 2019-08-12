@@ -39,7 +39,7 @@ namespace SouthGloucestershireBinCollection
             var request = new RestRequest(String.Format(COLLECTION_DATES_URL, id));
             request.AddHeader("Content-Type", "application/json");
 
-            var normalCollectionDates = client.GetAsync<List<CollectionDates>>(request);
+            var normalCollectionDates = client.GetAsync<List<InternalCollectionDates>>(request);
             var adjustedDates = this.GetAlteredDatesAsync();
 
             await Task.WhenAll(normalCollectionDates, adjustedDates);
@@ -51,17 +51,18 @@ namespace SouthGloucestershireBinCollection
                 {
                     return new CollectionDates()
                     {
-                        C1 = this.GetActualDate(collectionDate.C1, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        C2 = this.GetActualDate(collectionDate.C2, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        C3 = this.GetActualDate(collectionDate.C3, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse1 = this.GetActualDate(collectionDate.C1, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse2 = this.GetActualDate(collectionDate.C2, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse3 = this.GetActualDate(collectionDate.C3, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
 
-                        G1 = this.GetActualDate(collectionDate.G1, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        G2 = this.GetActualDate(collectionDate.G2, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        G3 = this.GetActualDate(collectionDate.G3, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste1 = this.GetActualDate(collectionDate.G1, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste2 = this.GetActualDate(collectionDate.G2, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste3 = this.GetActualDate(collectionDate.G3, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
 
-                        R1 = this.GetActualDate(collectionDate.R1 < collectionDate.C1 ? collectionDate.R1 : collectionDate.C1, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        R2 = this.GetActualDate(collectionDate.R2 < collectionDate.C2 ? collectionDate.R2 : collectionDate.C2, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        R3 = this.GetActualDate(collectionDate.R3 < collectionDate.C3 ? collectionDate.R3 : collectionDate.C3, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        // CX represents recycling and non-recycling
+                        Recycling1 = this.GetActualDate(collectionDate.R1 < collectionDate.C1 ? collectionDate.R1 : collectionDate.C1, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Recycling2 = this.GetActualDate(collectionDate.R2 < collectionDate.C2 ? collectionDate.R2 : collectionDate.C2, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Recycling3 = this.GetActualDate(collectionDate.R3 < collectionDate.C3 ? collectionDate.R3 : collectionDate.C3, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
                     };
                 }
             }
