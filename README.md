@@ -1,16 +1,16 @@
 # SGC-Bin-Collection
-![Nuget](https://img.shields.io/nuget/v/SouthGloucestershireBinCollection.svg)
+![Nuget](https://img.shields.io/nuget/v/Bottlecap.SouthGloucestershireBinCollection.svg)
 
 Helper library for getting bin collection information from South Gloucestershire Council.
 
-Releases can be found on [Nuget](https://www.nuget.org/packages/SouthGloucestershireBinCollection/).
+Releases can be found on [Nuget](https://www.nuget.org/packages/Bottlecap.SouthGloucestershireBinCollection/).
 
 ## Building
 
 To build, execute the tests, and deploy to nuget run the following command
 
 ```
-docker image build ./ -t SouthGloucestershireBinCollection:latest --build-arg PACKAGE_VERSION=<<VERSION HERE> --build-arg NUGET_PACKAGE_API=<<NUGET API KEY HERE>
+docker image build ./ -t bottlecap.southgloucestershirebincollectio:latest --build-arg PACKAGE_VERSION=<<VERSION HERE> --build-arg NUGET_PACKAGE_API=<<NUGET API KEY HERE>
 ```
 
 ## Usage
