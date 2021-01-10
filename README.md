@@ -10,7 +10,7 @@ Releases can be found on [Nuget](https://www.nuget.org/packages/SouthGloucesters
 To build, execute the tests, and deploy to nuget run the following command
 
 ```
-docker image build ./ -t bottlecap.net.bots:latest --build-arg PACKAGE_VERSION=<<VERSION HERE> --build-arg NUGET_PACKAGE_API=<<NUGET API KEY HERE>
+docker image build ./ -t SouthGloucestershireBinCollection:latest --build-arg PACKAGE_VERSION=<<VERSION HERE> --build-arg NUGET_PACKAGE_API=<<NUGET API KEY HERE>
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ var targetAddress = new Address()
     // Address details here
 };
 
-var addresses = await council.GetAddressesAsync(targetAddress)
+var addresses = await council.GetAddressesAsync(targetAddress);
 ```
 
 If a single address is returned, then we've successfully matched your target address with the details the council holds. If multiple addresses are returned, then the provided address wasn't specific enough. If no addresses are returned, then the provided address doesn't match the council records. This could be because a certain line is specified, but held differently on their servers.
@@ -38,8 +38,11 @@ If a single address is returned, then we've successfully matched your target add
 Once an address has been determined, pass the `Uprn` of the address object to `GetCollectionDatesAsync`
 
 ```
+// Provide a list of date adjustments. This is to counteract the fact SGC don't always update their API results to account for things like Christmas.
+var dateAdjustments = new List<DateAdjustment>();
+dateAdjustments.Add(new DateAdjustment() { OriginalDate = new DateTime(2021,1,1), NewDate = new DateTime(2021,1,2) });
 
-const collectionDates = await council.GetCollectionDatesAsync(addresses.First().Uprn)
+const collectionDates = await council.GetCollectionDatesAsync(addresses.First().Uprn, dateAdjustments);
 
 ```
 
