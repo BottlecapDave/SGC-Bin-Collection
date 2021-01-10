@@ -4,7 +4,7 @@ using RestSharp.Serializers;
 using RestSharp.Deserializers;
 using System.Globalization;
 
-namespace SouthGloucestershireBinCollection
+namespace Bottlecap.SouthGloucestershireBinCollection
 {
     public class UKJsonSerializer : ISerializer, IDeserializer
     {

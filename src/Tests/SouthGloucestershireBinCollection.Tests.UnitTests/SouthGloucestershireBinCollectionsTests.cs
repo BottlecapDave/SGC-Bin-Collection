@@ -2,7 +2,7 @@
 using System.Linq;
 using Xunit;
 
-namespace SouthGloucestershireBinCollection.Tests.UnitTests
+namespace Bottlecap.SouthGloucestershireBinCollection.Tests.UnitTests
 {
     public class SouthGloucestershireCouncilTests
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace SouthGloucestershireBinCollection
+namespace Bottlecap.SouthGloucestershireBinCollection
 {
     public class DateAdjustment
     {
