@@ -14,7 +14,6 @@ namespace Bottlecap.SouthGloucestershireBinCollection
 
         private const string BASE_URL = "https://webapps.southglos.gov.uk/";
         private const string ADDRESS_URL = "Webservices/SGC.RefuseCollectionService/RefuseCollectionService.svc/getAddresses/{0}";
-        private const string ALTERED_DATES_URL = "environment-and-planning/recycling-rubbish-and-waste/check-your-collection-date/";
         private const string COLLECTION_DATES_URL = "Webservices/SGC.RefuseCollectionService/RefuseCollectionService.svc/getCollections/{0}";
 
         /// <summary>
@@ -38,10 +37,8 @@ namespace Bottlecap.SouthGloucestershireBinCollection
         /// Get collecton dates for the provided address id
         /// </summary>
         /// <param name="id">The id of the address to get the collection dates for.</param>
-        /// <param name="dateAdjustments">The collection of date adjustments to apply. This is to counteract the fact 
-        /// South Gloucestershire council don't always alter their dates for events like christmas</param>
         /// <returns>The collection of collection dates</returns>
-        public async Task<CollectionDates> GetCollectionDatesAsync(string id, IEnumerable<DateAdjustment> dateAdjustments)
+        public async Task<CollectionDates> GetCollectionDatesAsync(string id)
         {
             var client = new RestClient(BASE_URL);
             client.AddHandler("application/json", () => UKJsonSerializer.Default);
@@ -49,27 +46,30 @@ namespace Bottlecap.SouthGloucestershireBinCollection
             var request = new RestRequest(String.Format(COLLECTION_DATES_URL, id));
             request.AddHeader("Content-Type", "application/json");
 
-            var normalCollectionDates = await client.GetAsync<List<InternalCollectionDates>>(request);
+            var normalCollectionDates = client.GetAsync<List<InternalCollectionDates>>(request);
+            var adjustedDates = this.GetDateAdjustmentsAsync();
 
-            if (normalCollectionDates != null)
+            await Task.WhenAll(normalCollectionDates, adjustedDates);
+
+            if (normalCollectionDates.Result != null)
             {
-                var collectionDate = normalCollectionDates.FirstOrDefault();
+                var collectionDate = normalCollectionDates.Result.FirstOrDefault();
                 if (collectionDate != null)
                 {
                     return new CollectionDates()
                     {
-                        Refuse1 = this.GetActualDate(collectionDate.R1, dateAdjustments, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        Refuse2 = this.GetActualDate(collectionDate.R2, dateAdjustments, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        Refuse3 = this.GetActualDate(collectionDate.R3, dateAdjustments, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse1 = this.GetActualDate(collectionDate.R1, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse2 = this.GetActualDate(collectionDate.R2, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Refuse3 = this.GetActualDate(collectionDate.R3, adjustedDates.Result, REFUSE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
 
-                        GardenWaste1 = this.GetActualDate(collectionDate.G1, dateAdjustments, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        GardenWaste2 = this.GetActualDate(collectionDate.G2, dateAdjustments, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        GardenWaste3 = this.GetActualDate(collectionDate.G3, dateAdjustments, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste1 = this.GetActualDate(collectionDate.G1, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste2 = this.GetActualDate(collectionDate.G2, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        GardenWaste3 = this.GetActualDate(collectionDate.G3, adjustedDates.Result, GARDEN_WASTE_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
 
                         // RX represents recycling and non-recycling
-                        Recycling1 = this.GetActualDate(collectionDate.R1 < collectionDate.C1 ? collectionDate.R1 : collectionDate.C1, dateAdjustments, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        Recycling2 = this.GetActualDate(collectionDate.R2 < collectionDate.C2 ? collectionDate.R2 : collectionDate.C2, dateAdjustments, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
-                        Recycling3 = this.GetActualDate(collectionDate.R3 < collectionDate.C3 ? collectionDate.R3 : collectionDate.C3, dateAdjustments, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Recycling1 = this.GetActualDate(collectionDate.R1 < collectionDate.C1 ? collectionDate.R1 : collectionDate.C1, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Recycling2 = this.GetActualDate(collectionDate.R2 < collectionDate.C2 ? collectionDate.R2 : collectionDate.C2, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
+                        Recycling3 = this.GetActualDate(collectionDate.R3 < collectionDate.C3 ? collectionDate.R3 : collectionDate.C3, adjustedDates.Result, RECYLCING_NUMBER_OF_DAYS_BETWEEN_PICKUPS),
                     };
                 }
             }
@@ -77,14 +77,23 @@ namespace Bottlecap.SouthGloucestershireBinCollection
             return null;
         }
 
-        private DateTime? GetActualDate(DateTime? targetDate, IEnumerable<DateAdjustment> alternativeDates, int numberOfDaysBetweenPickups)
+        /// <summary>
+        /// Get the list of dates, that when returned by SGC should be reported back as a different date.
+        /// </summary>
+        /// <returns>The collection of adjusted dates</returns>
+        protected virtual Task<IEnumerable<DateAdjustment>> GetDateAdjustmentsAsync()
         {
-            if (targetDate.HasValue && alternativeDates != null)
+            return Task.FromResult<IEnumerable<DateAdjustment>>(new List<DateAdjustment>());
+        }
+
+        private DateTime? GetActualDate(DateTime? targetDate, IEnumerable<DateAdjustment> dateAdjustments, int numberOfDaysBetweenPickups)
+        {
+            if (targetDate.HasValue && dateAdjustments != null)
             {
                 // Check to see if we have a alternative date for the last collection,
                 // and if so if the alternative date has yet to occur.
                 var passedDate = targetDate.Value.AddDays(numberOfDaysBetweenPickups * -1);
-                var passedAlternativeDate = alternativeDates.FirstOrDefault(x => x.OriginalDate == passedDate);
+                var passedAlternativeDate = dateAdjustments.FirstOrDefault(x => x.OriginalDate == passedDate);
                 if (passedAlternativeDate != null &&
                     passedAlternativeDate?.NewDate.Date >= DateTime.UtcNow.Date)
                 {
@@ -93,7 +102,7 @@ namespace Bottlecap.SouthGloucestershireBinCollection
 
                 // If our target date is present in our alternative dates section, then we must
                 // use our alternative date.
-                var alternativeDate = alternativeDates.FirstOrDefault(x => x.OriginalDate == targetDate);
+                var alternativeDate = dateAdjustments.FirstOrDefault(x => x.OriginalDate == targetDate);
                 if (alternativeDate != null)
                 {
                     return alternativeDate.NewDate;

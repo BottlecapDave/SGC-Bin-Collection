@@ -38,12 +38,10 @@ If a single address is returned, then we've successfully matched your target add
 Once an address has been determined, pass the `Uprn` of the address object to `GetCollectionDatesAsync`
 
 ```
-// Provide a list of date adjustments. This is to counteract the fact SGC don't always update their API results to account for things like Christmas.
-var dateAdjustments = new List<DateAdjustment>();
-dateAdjustments.Add(new DateAdjustment() { OriginalDate = new DateTime(2021,1,1), NewDate = new DateTime(2021,1,2) });
-
-const collectionDates = await council.GetCollectionDatesAsync(addresses.First().Uprn, dateAdjustments);
+const collectionDates = await council.GetCollectionDatesAsync(addresses.First().Uprn);
 
 ```
 
 This will return you the next 3 collection dates for `Refuse`, `Garden Waste` and `Recycling`.
+
+Sometimes, SGC have adjustments to the collection dates on their website for events like Christmas. Unfortunately, these aren't done consistently so you can override the `GetDateAdjustmentsAsync` to provide these adjustments in a consistent format which well then be used to adjust the retrieved dates
