@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Bottlecap.SouthGloucestershireBinCollection</RootNamespace>
+
+    <PackageOutputPath>./output</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,0 +1,31 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/github", {
+        "assets": [
+          {"path": "src/output/*.nupkg", "label": "SGC-Bin-Collection.nupkg"}
+        ]
+      }],
+    [
+      "@semantic-release/exec", {
+        "prepareCmd" : "(cd src && DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true dotnet pack -c Release /p:Version=${nextRelease.version} /p:PackageReleaseNotes=\"${nextRelease.notes\")",
+        "publishCmd": "dotnet nuget push ./src/output/*.nupkg -k ${process.env.NUGET_TOKEN} -s https://api.nuget.org/v3/index.json"
+      }
+    ],
+    [
+      "@semantic-release/git", {
+        "assets": ["package.json", "CHANGELOG.md"],
+        "message": "release: Released v${nextRelease.version} [skip ci]"
+      }
+    ]
+  ]
+}

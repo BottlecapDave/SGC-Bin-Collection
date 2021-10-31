@@ -3,3 +3,5 @@
 **/.vs/*
 **/packages/*
 build.cmd
+node_modules/
+output/
