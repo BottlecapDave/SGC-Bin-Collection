@@ -25,7 +25,7 @@ jobs:
       - name: Checkout latest
         uses: actions/checkout@v2
         with:
-          ref: 'main'
+          ref: 'master'
           fetch-depth: 0
       - name: Merge main into develop
         uses: devmasx/merge-branch@master
